@@ -25,21 +25,21 @@ def template_editing_window(sections, section_layout, title=''):
         if section.get_signature() is None:
             sections.remove(section)
 
-    create_layout = [[sg.Text( "Las plantillas permiten experimentar más fácilmente con amiibos.\nAl cargar una plantilla se llenarán todas las secciones habilitadas en ella. ", justification= "center ", pad=(5, (3, 12)))],
-                     [sg.Text( "Nombre de la Plantilla: "), sg.Input(title, key= "TEMPLATE_NAME ")],
+    create_layout = [[sg.Text("Las plantillas permiten experimentar más fácilmente con amiibos.\nAl cargar una plantilla se llenarán todas las secciones habilitadas en ella.", justification="center", pad=(5, (3, 12)))],
+                     [sg.Text("Nombre de la Plantilla: "), sg.Input(title, key="TEMPLATE_NAME")],
                      [sg.Column(section_layout, size=(None, 200), scrollable=True, vertical_scroll_only=True,
                                 element_justification='left', expand_x=True, expand_y=True)],
-                     [sg.Button( "Seleccionar Todo "), sg.Button( "Deseleccionar Todo ")],
-                     [sg.Submit( "Guardar "), sg.Cancel( "Cancelar ")]]
-    create_window = sg.Window( "Seleccionar Plantilla ", create_layout, element_justification='center')
+                     [sg.Button("Seleccionar Todo"), sg.Button("Deseleccionar Todo")],
+                     [sg.Submit("Guardar"), sg.Cancel("Cancelar")]]
+    create_window = sg.Window("Seleccionar Plantilla", create_layout, element_justification='center')
 
     while True:
         event, values = create_window.read()
 
-        if event ==  "Guardar ":
+        if event == "Guardar":
             # some fancy saving thing
-            if values[ "TEMPLATE_NAME "] ==  " ":
-                sg.popup( "Por favor dale un nombre a tu plantilla ", title= "Nombre Faltante ")
+            if values["TEMPLATE_NAME"] == "":
+                sg.popup("Por favor dale un nombre a tu plantilla", title="Nombre Faltante")
                 continue
 
             template_values = {}
@@ -49,25 +49,25 @@ def template_editing_window(sections, section_layout, title=''):
                     #  set region signature = value in input
                     template_values[sections[i // 2].get_signature()] = values[i + 1]
 
-            path = os.path.join( "templates ", values[ "TEMPLATE_NAME "])
-            path +=  ".json "
+            path = os.path.join("templates", values["TEMPLATE_NAME"])
+            path += ".json"
             with open(path, 'w+') as fp:
                 fp.write(json.dumps(template_values))
 
             create_window.close()
             break
-        elif event ==  "Seleccionar Todo ":
+        elif event == "Seleccionar Todo":
             # checkboxes have odd key values
             for i in range(1, len(sections) * 2, 2):
                 create_window[i].update(True)
                 create_window[i + 1].update(disabled=False)
-        elif event ==  "Deseleccionar Todo ":
+        elif event == "Deseleccionar Todo":
             # checkboxes have odd key values
             for i in range(1, len(sections) * 2, 2):
                 create_window[i].update(False)
                 create_window[i + 1].update(disabled=True)
 
-        elif event == sg.WIN_CLOSED or event ==  "Cancelar ":
+        elif event == sg.WIN_CLOSED or event == "Cancelar":
             create_window.close()
             break
         else:
@@ -110,26 +110,26 @@ def run_load_window():
     :return: ([Values from Template], Template Name)
     """
     templates = []
-    files = os.listdir( "templates ")
+    files = os.listdir("templates")
     for file in files:
-        if file[-4:] ==  "json ":
+        if file[-4:] == "json":
             templates.append(file[:-5])
     load_layout = [[sg.Listbox(templates, select_mode=sg.LISTBOX_SELECT_MODE_SINGLE, size=(50, 5))],
-                   [sg.Submit( "Seleccionar "), sg.Cancel( "Cancelar ")]]
-    load_window = sg.Window( "Seleccionar Plantilla ", load_layout, element_justification='center')
+                   [sg.Submit("Seleccionar"), sg.Cancel("Cancelar")]]
+    load_window = sg.Window("Seleccionar Plantilla", load_layout, element_justification='center')
     while True:
         event, values = load_window.read()
 
-        if event ==  "Seleccionar ":
+        if event == "Seleccionar":
             # since no keys are specified key defaults to 0
             # listbox returns list, but only 1 option is selectable so it's [0]
-            path = os.path.join( "templates ", values[0][0])
-            path +=  ".json "
+            path = os.path.join("templates", values[0][0])
+            path += ".json"
             load_window.close()
             with open(path, 'r') as fp:
                 template_values = json.load(fp)
                 return template_values, values[0][0]
-        elif event == sg.WIN_CLOSED or event ==  "Cancelar ":
+        elif event == sg.WIN_CLOSED or event == "Cancelar":
             load_window.close()
             break
     return None
@@ -168,4 +168,8 @@ def run_edit_window(sections, amiibo):
             key_index += 1
 
             layout = [check_box, sg.Text(section.get_name()), sg.Input(section.get_value_from_bin(amiibo), key=key_index, disabled=True)]
-            key_index += 
+            key_index += 1
+
+        section_layout.append(layout)
+
+    template_editing_window(sections, section_layout, template_name)
